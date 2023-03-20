@@ -1,0 +1,92 @@
+project: bob.build/benchkram/bobc
+version: 0.6.2
+nixpkgs: https://github.com/NixOS/nixpkgs/archive/refs/tags/22.05.tar.gz
+
+variables:
+  OPENAPI_FILE: ./openapi.yaml
+  OPENAPI_FILE_STORE: ./openapi-store.yaml
+  REST_SERVER_OUT: ./restserver/generated
+  STORE_CLIENT_OUT: ./bob/pkg/store-client/generated
+
+build:
+  build:
+    cmd: |
+      mkdir -p build
+      cp ./bobc ./build/bobc
+    target: |
+      ./build
+    dependsOn:
+      - server
+
+  generate-go-api:
+    input: |-
+      openapi.yaml
+    cmd: |-
+      oapi-codegen -package generated -generate server ${OPENAPI_FILE} > ${REST_SERVER_OUT}/server.gen.go
+      oapi-codegen -package generated -generate types ${OPENAPI_FILE} > ${REST_SERVER_OUT}/types.gen.go
+      oapi-codegen -package generated -generate client ${OPENAPI_FILE} > ${REST_SERVER_OUT}/client.gen.go
+    target: |
+      ./restserver/generated/server.gen.go
+      ./restserver/generated/types.gen.go
+      ./restserver/generated/client.gen.go
+
+  generate-store-client:
+    input: |-
+      openapi-store.yaml
+    cmd: |-
+      mkdir -p ${STORE_CLIENT_OUT}
+      oapi-codegen -package generated -generate types ${OPENAPI_FILE_STORE} > ${STORE_CLIENT_OUT}/types.gen.go
+      oapi-codegen -package generated -generate client ${OPENAPI_FILE_STORE} > ${STORE_CLIENT_OUT}/client.gen.go
+    target: |
+      ./bob/pkg/store-client/generated/
+
+  server:
+    input: |
+      **/*.go
+    cmd: CGO_ENABLED=0 go build -o bobc
+    dependsOn:
+      - generate-go-api
+    target: ./bobc
+
+  lint:
+    input: |
+      *
+      !build/**
+    cmd: |
+      CGO_ENABLED=0 golangci-lint run --timeout=10m0s .
+
+  container:
+    input: |
+      Dockerfile
+      ./build/**
+    cmd: docker build -t bobc:latest .
+    dependsOn:
+      - build
+    target:
+      image: bobc:latest
+
+  test:
+    cmd: go test ./...
+    dependsOn:
+      - server
+      - generate-store-client
+    dependencies: [nix, gcc]
+    rebuild: always
+
+run:
+  run-server:
+    type: binary
+    path: ./build/server
+    dependsOn:
+      - build
+      - env
+  env:
+    type: compose
+    path: docker-compose.yaml
+
+dependencies: [
+  go_1_18,
+  docker,
+  golangci-lint,
+  oapicodegen_v1.6.0.nix,
+]

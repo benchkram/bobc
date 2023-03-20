@@ -1,0 +1,32 @@
+version: "3.5"
+
+services:
+  bob_test_db:
+    # on the server 11.2-alpine is used.
+    # important for backup handling
+    image: postgres:11.2-alpine
+    container_name: bob_test_db
+    restart: unless-stopped
+    tmpfs:
+      - /var/lib/postgres/data
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 8KLg2VSke13sAMId6HNqk4Bq
+      POSTGRES_DB: postgres
+    ports:
+      - "5432:5432"
+    command:
+      - -c
+      - wal_level=replica #log level: saves every needed info for a PITR.
+      - -c
+      - max_wal_senders=3
+      - -c
+      - max_replication_slots=3
+      - -c
+      - hot_standby=on #read-only
+      - -c
+      - log_statement=all
+      - -c
+      - log_destination=stderr

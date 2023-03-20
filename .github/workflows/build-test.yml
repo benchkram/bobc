@@ -1,0 +1,62 @@
+name: Build and Test
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        id: checkout
+        uses: actions/checkout@v3
+
+      - name: Install nix
+        id: install-nix
+        uses: cachix/install-nix-action@v15
+        with:
+          nix_path: nixpkgs=channel:nixos-unstable
+
+      - name: Checkout bob repo
+        id: checkout-bob
+        run: git clone https://github.com/benchkram/bob.git
+
+      - name: Install Go
+        id: install-go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.19
+
+      - name: Install bob
+        id: install-bob
+        run: cd bob && make install-prod
+
+      - name: bob login
+        id: bob-login
+        run: bob auth init --token ${{ secrets.BOB_TOKEN }}
+
+      - name: Install nix dependencies
+        id: install-nix-deps
+        run: bob install
+
+      - name: Go mod tidy
+        id: go-mod-tidy
+        run: go mod tidy
+
+      - name: Lint
+        id: lint
+        run: bob build lint
+
+      - name: Build container
+        id: build
+        run: bob build --push # TODO: build container once docker image pulling from the remote store works properly.
+        
+      - name: Run tests
+        id: test
+        run: bob build test
+
+      - name: Cleanup
+        id: cleanup
+        run: bob auth rm default

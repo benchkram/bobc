@@ -1,0 +1,176 @@
+openapi: 3.0.0
+info:
+  title: Bob Server API
+  description: Server endpoint for the bob cli tool.
+  version: 0.0.1
+
+paths:
+
+  /api/project/{projectName}/artifacts:
+    parameters:
+      - name: projectName
+        in: path
+        description: project name
+        required: true
+        schema:
+          type: string
+
+    post:
+      summary: Upload a artifact and assign it to a project.
+      description: Create a artifact under a project.
+      tags:
+        - projects
+      operationId: uploadArtifact
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                file:
+                  type: string
+                  format: binary
+      responses:
+        200:
+          description: Ok
+        400:
+          description: Bad Request
+        409:
+          description: Conflict
+        500:
+          description: Internal Server Error
+
+    get:
+      description: Get a list of all the artifacts for this project
+      tags:
+        - projects
+      operationId: getProjectArtifacts
+      responses:
+        200:
+          description: Array of artifact ids
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArtifactIds'
+        400:
+          description: Bad Request
+        409:
+          description: Conflict
+        500:
+          description: Internal Server Error
+
+  /api/project/{projectName}/artifact/{artifactId}:
+    parameters:
+      - name: projectName
+        in: path
+        description: project name
+        required: true
+        schema:
+          type: string
+      - name: artifactId
+        in: path
+        description: hash id
+        required: true
+        schema:
+          type: string
+
+    head:
+      summary: |
+        Returns 200 with Bob-Exists header.
+      description: Check if a artifact exists.
+      tags:
+        - projects
+      operationId: projectArtifactExists
+      responses:
+        200:
+          description: Returns true if the artifact exists
+          headers:
+            Bob-Exists:
+              schema:
+                type: boolean
+              description: returns true if the artifact exists
+        400:
+          description: Bad Request
+        404:
+          description: Project Not Found
+        500:
+          description: Internal Server Error
+
+    get:
+      summary: Get a project hash under a project id.
+      description: let the user create a hash under a project
+      tags:
+        - projects
+      operationId: getProjectArtifact
+      responses:
+        200: # status code
+          description: fetched Project Hash item
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Artifact'
+        400:
+          description: Bad Request
+        404:
+          description: Project Hash Not Found
+        500:
+          description: Internal Server Error
+
+
+  /api/health:
+    get:
+      summary: Returns the health status of the server
+      description: Returns the health status of the server
+      tags:
+        - stats
+      operationId: getHealth
+      responses:
+        200:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Success"
+        default:
+          description: Got Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+components:
+  schemas:
+
+    Artifact:
+      type: object
+      required:
+       - id
+      properties:
+        id:
+          type: string
+        location:
+          description: location to download the artifact using a GET request.
+          type: string
+
+    ArtifactIds:
+      type: array
+      items:
+        type: string
+
+    Error:
+        type: object
+        required:
+          - id
+        properties:
+          id:
+            type: string
+
+    Success:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string

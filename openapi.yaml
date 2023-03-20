@@ -1,0 +1,357 @@
+openapi: 3.0.0
+info:
+  title: Bob Server API
+  description: Server endpoint for the bob cli tool.
+  version: 0.0.1
+
+paths:
+  /api/projects:
+    get:
+      summary: Returns a list of projects.
+      description: Return all the projects stored in db.
+      tags:
+        - projects
+      operationId: getProjects
+      responses:
+        200: # status code
+          description: A JSON array of projects
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Project'
+        400:
+          description: Bad Request
+        500:
+          description: Internal Server Error
+
+    post:
+      summary: Create a new project.
+      description: Create a new project by name and return message.
+      tags:
+        - projects
+      operationId: createProject
+      requestBody:
+        description: Basic info to create a new project.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProjectCreate'
+      responses:
+        200: # status code
+          description: A project object if found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExtendedProject'
+        400:
+          description: Bad Request
+        500:
+          description: Internal Server Error
+
+  /api/project/{projectName}:
+    parameters:
+      - name: projectName
+        in: path
+        description: project name
+        required: true
+        schema:
+          type: string
+
+    head:
+      summary: Check if a project name is taken.
+      description: |
+        Takes the project names and searches the database if it exists.
+      tags:
+        - projects
+      operationId: projectExists
+      responses:
+        200:
+          description: Returns true if the project name exists
+          headers:
+            Bob-Exists:
+              schema:
+                type: boolean
+              description: returns true if the project name exists
+        400:
+          description: Bad Request
+        500:
+          description: Internal Server Error
+
+    get:
+      summary: Returns a single project by id.
+      description: Return a single project by project id UUID.
+      tags:
+        - projects
+      operationId: getProject
+      responses:
+        200: # status code
+          description: A project object if found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExtendedProject'
+        400:
+          description: Bad Request
+        404:
+          description: Project Not Found
+        500:
+          description: Internal Server Error
+
+    delete:
+      summary: Delete a project by id.
+      description: let user delete a project by it's id.
+      tags:
+        - projects
+      operationId: deleteProject
+      responses:
+        200: # status code
+          description: OK
+        400:
+          description: Bad Request
+        500:
+          description: Internal Server Error
+
+  /api/project/{projectName}/artifacts:
+    parameters:
+      - name: projectName
+        in: path
+        description: project name
+        required: true
+        schema:
+          type: string
+
+    post:
+      summary: Upload a artifact and assign it to a project.
+      description: Create a artifact under a project.
+      tags:
+        - projects
+      operationId: uploadArtifact
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                file:
+                  type: string
+                  format: binary
+      responses:
+        200:
+          description: Ok
+        400:
+          description: Bad Request
+        409:
+          description: Conflict
+        500:
+          description: Internal Server Error
+
+    get:
+      description: Get a list of all the artifacts for this project
+      tags:
+        - projects
+      operationId: getProjectArtifacts
+      responses:
+        200:
+          description: Array of artifact ids
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArtifactIds'
+        400:
+          description: Bad Request
+        409:
+          description: Conflict
+        500:
+          description: Internal Server Error
+
+  /api/project/{projectName}/artifact/{artifactId}:
+    parameters:
+      - name: projectName
+        in: path
+        description: project name
+        required: true
+        schema:
+          type: string
+      - name: artifactId
+        in: path
+        description: hash id
+        required: true
+        schema:
+          type: string
+
+    head:
+      summary: |
+        Returns 200 with Bob-Exists header.
+      description: Check if a artifact exists.
+      tags:
+        - projects
+      operationId: projectArtifactExists
+      responses:
+        200:
+          description: Returns true if the artifact exists
+          headers:
+            Bob-Exists:
+              schema:
+                type: boolean
+              description: returns true if the artifact exists
+        400:
+          description: Bad Request
+        404:
+          description: Project Not Found
+        500:
+          description: Internal Server Error
+
+    get:
+      summary: Get a project hash under a project id.
+      description: get an artifact from a project
+      tags:
+        - projects
+      operationId: getProjectArtifact
+      responses:
+        200: # status code
+          description: fetched Project Hash item
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Artifact'
+        400:
+          description: Bad Request
+        404:
+          description: Project Hash Not Found
+        500:
+          description: Internal Server Error
+
+    delete:
+      summary: Delete a project hash.
+      description: let the user delete a hash under a project
+      tags:
+        - projects
+      operationId: deleteProjectArtifact
+      responses:
+        200: # status code
+          description: Project Hash deleted
+        400:
+          description: Bad Request
+        404:
+          description: Project Hash Not Found
+        500:
+          description: Internal Server Error
+
+  /api/health:
+    get:
+      summary: Returns the health status of the server
+      description: Returns the health status of the server
+      tags:
+        - stats
+      operationId: getHealth
+      responses:
+        200:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Success"
+        default:
+          description: Got Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+components:
+  schemas:
+    ProjectCreate:
+      type: object
+      required:
+        - name
+        - description
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+    ExtendedProject:
+      type: object
+      required:
+        - id
+        - name
+        - description
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        hashes:
+          type: array
+          items:
+            $ref: '#/components/schemas/Artifact'
+    Project:
+      type: object
+      required:
+        - id
+        - name
+        - description
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+
+    ArtifactIds:
+      type: array
+      items:
+        type: string
+
+    Artifact:
+      type: object
+      required:
+        - id
+        - size
+      properties:
+        id:
+          type: string
+        size:
+          type: integer
+        location:
+          description: location to download the artifact using a GET request.
+          type: string
+    ArtifactCreate:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: string
+    ArtifactUpdate:
+      type: object
+      required:
+        - storage_path
+      properties:
+        storage_path:
+          type: string
+
+
+
+    Error:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: string
+
+    Success:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string

@@ -1,0 +1,27 @@
+project: localhost:8100/benchkram/bobc-example
+version: 0.6.2
+nixpkgs: https://github.com/NixOS/nixpkgs/archive/refs/tags/22.05.tar.gz
+
+build:
+  build:
+    input: |
+      Dockerfile
+      ./build/**
+    cmd: docker build -t bobc-example:latest .
+    dependsOn:
+      - binary
+    target:
+      image: bobc-example:latest
+
+  binary:
+    input: |
+      **/*.go
+    cmd: |
+      go build -o ./build/example main.go
+    target: |
+      ./build
+
+dependencies: [
+  go_1_18,
+  docker,
+]
