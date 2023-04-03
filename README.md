@@ -3,7 +3,7 @@
 </h1>
 
 <h3 align="center">
-  Artifact Storage Server for Bob
+   A Remote Cache for <a href="https://bob.build">Bob</a>
 </h3>
 
 <div align="center">
