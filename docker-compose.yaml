@@ -17,6 +17,8 @@ services:
       - postgres
 
   minio:
+    # For localhost access (e.g. to download pre-signed objects), add the following to your /etc/hosts
+    # 127.0.0.1       minio
     image: minio/minio:latest
     container_name: minio
     restart: always
