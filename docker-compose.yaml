@@ -1,7 +1,24 @@
 version: "3.5"
 
 services:
+  bobc:
+    image: bobc:latest
+    container_name: bobc
+    ports:
+      - 8100:8100
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PASSWORD: 8KLg2VSke13sAMId6HNqk4Bq
+      S3_ENDPOINT: minio:9000
+      S3_USE_SSL: "false"
+      API_KEY: # pass from host
+    depends_on:
+      - minio
+      - postgres
+
   minio:
+    # For localhost access (e.g. to download pre-signed objects), add the following to your /etc/hosts
+    # 127.0.0.1       minio
     image: minio/minio:latest
     container_name: minio
     restart: always
@@ -14,7 +31,7 @@ services:
       - --console-address
       - ":9001"
 
-  db:
+  postgres:
     image: postgres:11.2-alpine
     container_name: postgres
     restart: always
@@ -47,6 +64,6 @@ services:
     container_name: adminer
     # restart: always
     depends_on:
-      - db
+      - postgres
     ports:
       - "8080:8080"

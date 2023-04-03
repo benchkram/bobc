@@ -51,8 +51,8 @@ func (s *S) upload(ctx echo.Context, projectID uuid.UUID) (err error) {
 		return echo.NewHTTPError(http.StatusInternalServerError)
 	}
 
-	id := r.FormValue("id")
-	if id == "" {
+	artifactID := r.FormValue("id")
+	if artifactID == "" {
 		return echo.NewHTTPError(http.StatusBadRequest, "id is empty")
 	}
 
@@ -87,9 +87,9 @@ func (s *S) upload(ctx echo.Context, projectID uuid.UUID) (err error) {
 	f.Close()
 	defer os.Remove(f.Name())
 
-	fmt.Printf("Creating artifact: [projectId: %s, artifactId: %s]\n", projectID.String(), id)
+	fmt.Printf("Creating artifact: [projectId: %s, artifactId: %s]\n", projectID.String(), artifactID)
 
-	err = s.app.ProjectArtifactCreate(projectID, id, f.Name(), int(fi.Size()))
+	err = s.app.ProjectArtifactCreate(projectID, artifactID, f.Name(), int(fi.Size()))
 	if err != nil {
 		if errors.Is(err, application.ErrProjectNotFound) {
 			return echo.NewHTTPError(http.StatusNotFound, application.ErrProjectNotFound)

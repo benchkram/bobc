@@ -22,10 +22,10 @@ a Postgres database for storing projects and artifact metadata.
 
 To build and run bobc locally, you must have the following tools present on your system:
 - Bob with Nix (https://bob.build/docs/getting-started/installation/)
-- Docker (https://docs.docker.com/get-docker/)
+- Docker-Compose (https://docs.docker.com/get-docker/)
 
 Bob is used to build the Go binary and the container image.
-Docker Compose is used to ramp up a local environment with a Postgres database, MinIO (S3-compatible object storage)
+Docker-compose is used to ramp up a local environment with a Postgres database, MinIO (S3-compatible object storage)
 and Adminer to aid in inspecting the database contents.
 
 First of all, clone the repository and `cd` into it:
@@ -37,34 +37,33 @@ cd bobc
 
 
 ### Building
-To build the bobc binary, run the following command:
+To build the bobc container, run the following command:
 
 ```bash
-bob build
+bob build container
 ```
 
-This command will install any build dependencies (Go, Docker, GolangCI-Lint), bootstrap the project and build the
-server binary.
+This command will install any build dependencies (Go, Docker, GolangCI-Lint), bootstrap the project, build the bobc
+binary and subsequently build the container.
 
 ### Running
-To set up the Docker Compose environment run:
-
-```bash
-docker compose up -d
-```
-
-Then to start the server do:
+To set up the docker-compose environment and start the server run:
 
 ```bash
 export API_KEY="example-api-key"
-export POSTGRES_PASSWORD="8KLg2VSke13sAMId6HNqk4Bq"
-
-./build/bobc
+docker compose up -d
 ```
 
 You should now see bobc running on port 8100.
 
-### Example: Creating a project and pushing artifacts to it (Ubuntu/Debian)
+Note: MinIO at localhost requires a host alias to be set up in order to work properly.
+You should add the following to your `/etc/hosts` file:
+
+```bash
+127.0.0.1       minio
+```
+
+### Example: Creating a project and pushing artifacts to it
 
 You must create a project to be able to sync artifacts to the server.
 To do so, open a new terminal session and use the following `curl` command:
