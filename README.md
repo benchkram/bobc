@@ -56,6 +56,13 @@ docker compose up -d
 
 You should now see bobc running on port 8100.
 
+Note: MinIO at localhost requires a host alias to be set up in order to work properly.
+You should add the following to your `/etc/hosts` file:
+
+```bash
+127.0.0.1       minio
+```
+
 ### Example: Creating a project and pushing artifacts to it
 
 You must create a project to be able to sync artifacts to the server.
