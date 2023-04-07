@@ -35,7 +35,7 @@ git clone https://github.com/benchkram/bobc
 cd bobc
 ```
 
-You also need to pull the bob repo, since the openapi-related generated files will need to be updated once the actual
+You also need to clone the bob repo, since the openapi-related generated files will need to be updated once the actual
 build is invoked.
 
 ```bash
