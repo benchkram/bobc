@@ -21,7 +21,7 @@ jobs:
 
       - name: Checkout bob repo
         id: checkout-bob
-        run: git clone https://github.com/benchkram/bob.git
+        run: bob clone
 
       - name: Install Go
         id: install-go
