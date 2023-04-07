@@ -33,7 +33,7 @@ jobs:
 
       - name: Clone up-to-date bob repo
         id: clone-bob
-        run: bob clone
+        run: bob clone --https
 
       - name: Install up-to-date bob
         id: install-bob
