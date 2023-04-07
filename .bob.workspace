@@ -1,0 +1,5 @@
+repositories:
+    - name: bob
+      sshurl: git@github.com:benchkram/bob
+      httpsurl: https://github.com/benchkram/bob
+      localurl: ""

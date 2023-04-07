@@ -13,15 +13,17 @@ jobs:
         id: checkout
         uses: actions/checkout@v3
 
+      - name: Setup bob
+        id: setup-bob
+        uses: benchkram/bob-setup-action@v1
+        with:
+          version: 0.7.2
+
       - name: Install nix
         id: install-nix
         uses: cachix/install-nix-action@v15
         with:
           nix_path: nixpkgs=channel:nixos-unstable
-
-      - name: Checkout bob repo
-        id: checkout-bob
-        run: git clone https://github.com/benchkram/bob.git
 
       - name: Install Go
         id: install-go
@@ -29,7 +31,11 @@ jobs:
         with:
           go-version: 1.19
 
-      - name: Install bob
+      - name: Clone up-to-date bob repo
+        id: clone-bob
+        run: bob clone --https
+
+      - name: Install up-to-date bob
         id: install-bob
         run: cd bob && make install-prod
 
