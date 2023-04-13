@@ -87,12 +87,3 @@ func (p *P) ToProjectDatabaseType() *model.Project {
 		Artifacts:   artifacts,
 	}
 }
-
-func (p *P) ConvertHashToDatabaseType(hash *artifact.A) *model.Artifact {
-	h := &model.Artifact{
-		ID:        hash.ID,
-		ProjectID: p.ID.String(),
-	}
-
-	return h
-}

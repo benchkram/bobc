@@ -160,15 +160,16 @@ func (r *Repository) CreateArtifact(projectID uuid.UUID, artifactID string, file
 	}
 
 	h := model.Artifact{
-		ID:        artifactID,
-		ProjectID: p.ID.String(),
-		Size:      size,
+		ID:         uuid.New().String(),
+		ArtifactID: artifactID,
+		ProjectID:  p.ID.String(),
+		Size:       size,
 	}
 
 	err = r.db.Gorm().Create(&h).Error
 	errz.Fatal(err)
 
-	err = r.artifactStore.CreateArtifact(artifactID, filePath, size)
+	err = r.artifactStore.CreateArtifact(h.ID, filePath, size)
 	errz.Fatal(err)
 
 	return nil
@@ -179,8 +180,8 @@ func (r *Repository) artifact(projectID uuid.UUID, artifactID string) (_ *model.
 
 	hashGorm := &model.Artifact{}
 	result := r.db.Gorm().Where(&model.Artifact{
-		ID:        artifactID,
-		ProjectID: projectID.String(),
+		ProjectID:  projectID.String(),
+		ArtifactID: artifactID,
 	}).Find(hashGorm)
 	errz.Fatal(result.Error)
 
@@ -215,7 +216,7 @@ func (r *Repository) ProjectArtifact(projectID uuid.UUID, artifactID string) (_ 
 
 	arti := artifact.FromDatabaseType(artiGorm)
 
-	addr, err := r.artifactStore.Artifact(artifactID)
+	addr, err := r.artifactStore.Artifact(artiGorm.ID)
 	errz.Fatal(err)
 
 	arti.AccessLink = addr
@@ -232,7 +233,7 @@ func (r *Repository) ProjectArtifactDelete(projectID uuid.UUID, artifactID strin
 	err = r.db.Gorm().Delete(hashGorm).Error
 	errz.Fatal(err)
 
-	err = r.artifactStore.DeleteArtifact(artifactID)
+	err = r.artifactStore.DeleteArtifact(hashGorm.ID)
 	errz.Fatal(err)
 
 	return nil
