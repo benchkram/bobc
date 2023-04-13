@@ -6,9 +6,12 @@ import (
 	"github.com/benchkram/bobc/pkg/db/model"
 	"github.com/benchkram/bobc/pkg/optional"
 	"github.com/benchkram/bobc/restserver/generated"
+	"github.com/google/uuid"
 )
 
 type A struct {
+	UUID uuid.UUID
+
 	// ID is the hash of the artifact itself as it was computed
 	// when being uploaded (see: content-addressable storage)
 	ID string
@@ -23,16 +26,18 @@ type A struct {
 
 func FromDatabaseType(m *model.Artifact) *A {
 	return &A{
-		ID:   m.ID,
+		UUID: uuid.MustParse(m.ID),
+		ID:   m.ArtifactID,
 		Size: m.Size,
 	}
 }
 
 func (a *A) ToDatabaseType(projectID string) *model.Artifact {
 	return &model.Artifact{
-		ID:        a.ID,
-		ProjectID: projectID,
-		Size:      a.Size,
+		ID:         a.UUID.String(),
+		ArtifactID: a.ID,
+		ProjectID:  projectID,
+		Size:       a.Size,
 	}
 }
 

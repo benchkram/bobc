@@ -40,6 +40,25 @@ func (db *database) migrate() (err error) {
 				return nil
 			},
 		},
+		{
+			ID: "202304131325",
+			Migrate: func(tx *gorm.DB) (err error) {
+				defer errz.Recover(&err)
+
+				if tx == nil {
+					return ErrDatabaseNil
+				}
+
+				// add artifact_id column
+				err = tx.AutoMigrate(&Artifact202304131325{})
+				errz.Fatal(err)
+
+				return nil
+			},
+			Rollback: func(tx *gorm.DB) error {
+				return nil
+			},
+		},
 	})
 
 	return m.Migrate()
@@ -72,4 +91,19 @@ type Project202303201338 struct {
 
 func (Project202303201338) TableName() string {
 	return "projects"
+}
+
+type Artifact202304131325 struct {
+	ID         string `gorm:"primaryKey"`
+	ProjectID  string `gorm:"column:project_id;not null" sql:"type:uuid"`
+	ArtifactID string `gorm:"column:artifact_id;not null;index"`
+	Size       int    `gorm:"column:size;not null"`
+
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	DeletedAt *time.Time `sql:"index"`
+}
+
+func (Artifact202304131325) TableName() string {
+	return "artifacts"
 }

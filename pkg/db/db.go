@@ -2,9 +2,10 @@ package db
 
 import (
 	"errors"
+	"log"
+
 	"github.com/benchkram/errz"
 	"gorm.io/gorm"
-	"log"
 )
 
 // Default errors
