@@ -95,7 +95,7 @@ func (Project202303201338) TableName() string {
 
 type Artifact202304131325 struct {
 	ID         string `gorm:"primaryKey"`
-	ProjectID  string `gorm:"column:project_id;not null" sql:"type:uuid"`
+	ProjectID  string `gorm:"column:project_id;not null;index" sql:"type:uuid"`
 	ArtifactID string `gorm:"column:artifact_id;not null;index"`
 	Size       int    `gorm:"column:size;not null"`
 
