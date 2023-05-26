@@ -6,7 +6,6 @@ import (
 	"strconv"
 
 	"github.com/benchkram/bobc/application"
-	projectRepo "github.com/benchkram/bobc/pkg/projectrepo"
 	"github.com/benchkram/bobc/restserver/generated"
 	"github.com/benchkram/errz"
 	"github.com/google/uuid"
@@ -114,7 +113,7 @@ func (s *S) DeleteProject(ctx echo.Context, projectId string) (err error) {
 
 	p, err := s.app.Project(pid)
 	if err != nil {
-		if errors.Is(err, projectRepo.ErrNotFound) {
+		if errors.Is(err, application.ErrProjectNotFound) {
 			return ctx.JSON(http.StatusNotFound, nil)
 		} else {
 			errz.Log(err)

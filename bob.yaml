@@ -1,5 +1,5 @@
 project: bob.build/benchkram/bobc
-version: 0.8.0
+version: 0.8.2
 nixpkgs: https://github.com/NixOS/nixpkgs/archive/refs/tags/22.05.tar.gz
 
 variables:
