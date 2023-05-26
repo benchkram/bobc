@@ -17,13 +17,6 @@ func (a *application) ProjectCreate(name, description string) (_ *project.P, err
 		return nil, ErrInvalidProjectName
 	}
 
-	//_, err = a.projects.ProjectByName(name)
-	//if err == nil {
-	//	return nil, ErrProjectAlreadyExists
-	//} else if !errors.Is(err, projectrepo.ErrNotFound) {
-	//	errz.Fatal(err)
-	//}
-
 	p := project.New(name, description)
 	err = a.projects.CreateOrUpdate(p)
 	errz.Fatal(err)
