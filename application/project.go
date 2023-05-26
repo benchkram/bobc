@@ -10,22 +10,15 @@ import (
 	"github.com/google/uuid"
 )
 
-func (s *application) ProjectCreate(name, description string) (_ *project.P, err error) {
+func (a *application) ProjectCreate(name, description string) (_ *project.P, err error) {
 	defer errz.Recover(&err)
 
-	if !s.projectNameValid(name) {
+	if !a.projectNameValid(name) {
 		return nil, ErrInvalidProjectName
 	}
 
-	//_, err = s.projects.ProjectByName(name)
-	//if err == nil {
-	//	return nil, ErrProjectAlreadyExists
-	//} else if !errors.Is(err, projectrepo.ErrNotFound) {
-	//	errz.Fatal(err)
-	//}
-
 	p := project.New(name, description)
-	err = s.projects.CreateOrUpdate(p)
+	err = a.projects.CreateOrUpdate(p)
 	errz.Fatal(err)
 
 	return p, nil
@@ -37,17 +30,17 @@ func (s *application) ProjectCreate(name, description string) (_ *project.P, err
 // codepoints. The names `.` and `..` are not allowed.
 //
 //	Ref: https://github.com/dead-claudia/github-limits#repository-names
-func (s *application) projectNameValid(name string) bool {
+func (a *application) projectNameValid(name string) bool {
 	// alphanumerics, hyphens, periods, underscores. length 1-100 codepoints
 	rex := regexp.MustCompile(`^[A-Za-z0-9-_.]{1,100}$`)
 
 	return rex.MatchString(name) && name != "." && name != ".."
 }
 
-func (s *application) Project(id uuid.UUID) (_ *project.P, err error) {
+func (a *application) Project(id uuid.UUID) (_ *project.P, err error) {
 	defer errz.Recover(&err)
 
-	p, err := s.projects.Project(id)
+	p, err := a.projects.Project(id)
 	if errors.Is(err, projectrepo.ErrNotFound) {
 		return nil, ErrProjectNotFound
 	} else if err != nil {
@@ -57,16 +50,16 @@ func (s *application) Project(id uuid.UUID) (_ *project.P, err error) {
 	return p, nil
 }
 
-func (s *application) Projects() (_ []*project.P, err error) {
+func (a *application) Projects() (_ []*project.P, err error) {
 	defer errz.Recover(&err)
 
-	return s.projects.Projects()
+	return a.projects.Projects()
 }
 
-func (s *application) ProjectByName(name string) (_ *project.P, err error) {
+func (a *application) ProjectByName(name string) (_ *project.P, err error) {
 	defer errz.Recover(&err)
 
-	p, err := s.projects.ProjectByName(name)
+	p, err := a.projects.ProjectByName(name)
 	if errors.Is(err, projectrepo.ErrNotFound) {
 		return nil, ErrProjectNotFound
 	} else if err != nil {
@@ -76,10 +69,10 @@ func (s *application) ProjectByName(name string) (_ *project.P, err error) {
 	return p, nil
 }
 
-func (s *application) ProjectExists(name string) (exists bool, err error) {
+func (a *application) ProjectExists(name string) (exists bool, err error) {
 	defer errz.Recover(&err)
 
-	_, err = s.projects.ProjectByName(name)
+	_, err = a.projects.ProjectByName(name)
 	if err == nil {
 		exists = true
 	} else {
@@ -93,14 +86,14 @@ func (s *application) ProjectExists(name string) (exists bool, err error) {
 	return exists, nil
 }
 
-func (s *application) ProjectDelete(projectID uuid.UUID) (err error) {
+func (a *application) ProjectDelete(projectID uuid.UUID) (err error) {
 	defer errz.Recover(&err)
 
-	_, err = s.projects.Project(projectID)
-	errz.Fatal(err)
-
 	// Delete from database
-	err = s.projects.ProjectDelete(projectID)
+	err = a.projects.ProjectDelete(projectID)
+	if errors.Is(err, projectrepo.ErrNotFound) {
+		return ErrProjectNotFound
+	}
 	errz.Fatal(err)
 
 	return nil
